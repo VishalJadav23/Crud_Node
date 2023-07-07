@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Node Crud</title>
+  <!-- Bootstrap Link  -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+
+</style>
+
+<body>
+  <center>
+
+    <div class="container pt-0 p-5 mt-2 m-5 w-50 ">
+      <h1>Add User</h1>
+      <form>
+        <!-- 2 column grid layout with text inputs for the first and last names -->
+        <div class="row mb-4 p-5 pb-0 text-start">
+          <!-- <div class="col"> -->
+            <div class="form-outline">
+              <label class="form-label" for="form3Example1">First name</label>
+              <input type="text" id="fullName" class="form-control" />
+            </div>
+          <!-- </div> -->
+          <!-- <div class="col"> -->
+
+
+            <div class="form-outline">
+              <label class="form-label" for="form3Example1">Phone</label>
+              <input type="text" id="phone" class="form-control" />
+            </div>
+          </div>
+        <!-- </div> -->
+        <div class="row mb-1 p-5 pb-1 pt-0 text-start">
+          <div class="col">
+            <div class="form-outline ">
+              <label class="form-label" for="form3Example2">Email</label>
+              <input type="text" id="email" class="form-control" />
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-outline ">
+              <label class="form-label" for="form3Example2">Password</label>
+              <input type="text" id="password" class="form-control" />
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Submit button -->
+        <button type="button" id="btn" class="btn btn-secondary btn-block m-0">Submit</button>
+
+
+      </form>
+    </div>
+  </center>
+
+
+  <div class="container p-5 pt-2">
+    <table class="table border" id="tbl">
+      <tr>
+        <th scope="col">FullName</th>
+        <th scope="col">Email</th>
+        <th scope="col">Phone</th>
+        <th scope="col">Created At</th>
+        <th scope="col">Actions</th>
+      </tr>
+
+    </table>
+  </div>
+
+</body>
+
+<script>
+
+  const btn = document.getElementById("btn")
+
+  const AddData = async () => {
+    try {
+      const data = {
+        fullName: document.getElementById("fullName").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        password: document.getElementById("password").value,
+      }
+
+      const { fullName, email, phone, password } = data
+
+      if (!fullName) return alert("Please Enter FullName")
+      if (!email) return alert("Please Enter email")
+      if (!phone) return alert("Please Enter phone")
+      if (!password) return alert("Please Enter password")
+
+
+      let options = {
+        method: "Post",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(data)
+      }
+
+      let res = await fetch('http://localhost:5000/user/newuser', options)
+
+      if (res.status === 200) {
+        res = await res.json()
+        GetData()
+      } else {
+        res = await res.json()
+        return alert(res.message)
+      }
+
+    } catch (error) {
+      return alert(error.message)
+    }
+  }
+
+  btn.addEventListener("click", AddData)
+
+  const RemoveData = async (e) => {
+    try {
+      const Confirm = window.confirm("Are you sure ?")
+      if (!Confirm) return
+
+      let id = e.target.id.split("_")[1]
+      let options = {
+        method: "DELETE"
+      }
+      let url = `http://localhost:5000/user/rmuser/${id}`
+      let result = await fetch(url, options)
+      if (result.status === 200) {
+        result = await result.json()
+        window.location.reload()
+      } else {
+        result = await result.json()
+        return alert(result.message)
+      }
+    } catch (error) {
+      return alert(error.message)
+    }
+  }
+
+
+  const Showdata = (data) => {
+
+    let i = 0
+    let tbl = document.getElementById("tbl")
+
+    while (i < data.length) {
+      let tr = document.getElementById(data[i]._id)
+      if (tr) {
+        tr.remove()
+      }
+      tr = document.createElement("tr")
+      tr.id = data[i]._id
+      let fullName = document.createElement("td")
+      let email = document.createElement("td")
+      let phone = document.createElement("td")
+      let createdAt = document.createElement("td")
+      let actions = document.createElement("td")
+      actions.style.display = "flex"
+      actions.style.gap = "1rem"
+      let remove = document.createElement("button")
+      let update = document.createElement("button")
+      update.id = `up_${data[i]._id}`
+      update.innerText = "Update"
+      update.classList = "btn btn-warning"
+      console.log(update)
+
+      update.addEventListener("click", (e) => {
+        let id = e.target.id.split("_")[1]
+        window.location.href = `http://localhost:5000/view/Update.html?id=${id}`
+      })
+
+
+      remove.innerText = "Remove"
+      remove.classList = "btn btn-danger text-dark"
+      remove.id = `rm_${data[i]._id}`
+
+      remove.addEventListener("click", RemoveData)
+
+
+
+
+      fullName.innerText = data[i].fullName
+      email.innerText = data[i].email
+      phone.innerText = data[i].phone
+      let date = new Date(data[i].createdAt)
+      createdAt.innerText = date.toDateString()
+
+
+      actions.appendChild(update)
+      actions.appendChild(remove)
+
+      tr.appendChild(fullName)
+      tr.appendChild(email)
+      tr.appendChild(phone)
+      tr.appendChild(createdAt)
+      tr.appendChild(actions)
+      tbl.appendChild(tr)
+      i++
+
+    }
+
+  }
+
+  const GetData = async () => {
+    try {
+      let result = await fetch("http://localhost:5000/user/newuser")
+      if (result && result.status === 200) {
+        result = await result.json()
+        Showdata(result.user)
+      }
+    } catch (error) {
+      return alert(error.message)
+    }
+  }
+  GetData()
+</script>
+
+</html>

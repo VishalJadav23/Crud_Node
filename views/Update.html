@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update User</title>
+    <!-- Bootstrap Link  -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <center>
+
+        <div class="container pt-0 p-5 mt-2 m-5 w-50 ">
+            <h1>Update User</h1>
+            <form>
+                <!-- 2 column grid layout with text inputs for the first and last names -->
+                <div class="row mb-4 p-5 pb-0 text-start">
+                    <div class="col-12">
+                        <div class="form-outline">
+                            <input type="text" id="fullName" class="form-control" />
+                            <label class="form-label" for="form3Example1">First name</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+
+
+                        <div class="form-outline">
+                            <input type="text" id="phone" class="form-control" />
+                            <label class="form-label" for="form3Example1">Phone</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-outline ">
+                            <input type="text" id="email" class="form-control" />
+                            <label class="form-label" for="form3Example2">Email</label>
+                        </div>
+                    </div>
+                </div>
+               
+
+
+
+                <!-- Submit button -->
+                <button type="button" onclick="UpdateData()" id="btn"
+                    class="btn btn-success btn-block m-0">Update</button>
+
+
+            </form>
+        </div>
+    </center>
+
+    <script>
+        const GetData = async () => {
+            try {
+                const id = window.location.search.split("?id=")[1]
+                let result = await fetch(`http://localhost:5000/user/upuser/${id}`)
+                if (result.status === 200) {
+                    result = await result.json()
+                    document.getElementById("fullName").value = result.user.fullName
+                    document.getElementById("phone").value = result.user.phone
+                    document.getElementById("email").value = result.user.email
+                    return
+                } else {
+                    result = await result.json()
+                    alert(result.message)
+                    return
+                }
+            } catch (error) {
+                console.log(error);
+                alert(error.message)
+            }
+        }
+
+        GetData()
+
+        const UpdateData = async () => {
+            try {
+                const Data = {
+                    fullName: document.getElementById("fullName").value,
+                    phone: document.getElementById("phone").value,
+                    email: document.getElementById("email").value,
+                }
+                const { fullName, phone, email } = Data
+
+                if (!fullName) return alert("Required To Feild FullName Is Empty")
+                if (!phone) return alert("Required To Feild Phone Is Empty")
+                if (!email) return alert("Required To Feild Email Is Empty")
+
+                let options = {
+                    method: "PUT",
+                    headers: {
+                        "Content-type": "application/json",
+                    },
+                    body: JSON.stringify(Data)
+                }
+
+                const id = window.location.search.split("?id=")[1]
+                let result = await fetch(`http://localhost:5000/user/update/user/${id}` , options)
+                if (result.status === 200) {
+                    result = await result.json()
+                    console.log(result)
+                    window.location.href = 'http://localhost:5000/view/Index.html'
+                } else {
+                    result = await result.json()
+                    return alert(result.message)
+                }
+            } catch (error) {
+                console.log(error);
+                alert(error.message)
+            }
+        }
+
+    </script>
+</body>
+
+</html>
